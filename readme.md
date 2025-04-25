@@ -28,7 +28,7 @@ Algoritma diuji dengan dua jenis data (angka dan kata) pada 8 ukuran dataset ber
 - `main.c`: Program utama untuk menjalankan eksperimen dan menghasilkan data performa
 - `integer_sorting_results.csv`: Hasil eksperimen untuk data angka
 - `string_sorting_results.csv`: Hasil eksperimen untuk data kata
-- `Laporan_Tugas4_SDA.pdf`: Laporan hasil analisis dan kesimpulan
+- `2308107010071_Tugas4_SDA.pdf`: Laporan hasil analisis dan kesimpulan
 
 ## Cara Menjalankan Program
 
