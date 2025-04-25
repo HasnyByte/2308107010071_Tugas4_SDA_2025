@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Perbandingan Algoritma Sorting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+        }
+        .chart-selector {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 10px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Perbandingan Algoritma Sorting</h1>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('integer')">Integer Sorting</div>
+        <div class="tab" onclick="showTab('string')">String Sorting</div>
+    </div>
+
+    <div id="integer-tab" class="tab-content active">
+        <div class="chart-selector">
+            <select id="integer-chart-type" onchange="updateIntegerChart()">
+                <option value="execution-time">Execution Time Comparison</option>
+                <option value="memory-usage">Memory Usage Comparison</option>
+                <option value="time-vs-size">Execution Time vs Data Size</option>
+                <option value="memory-vs-size">Memory Usage vs Data Size</option>
+            </select>
+        </div>
+        <div class="chart-container">
+            <canvas id="integer-chart"></canvas>
+        </div>
+    </div>
+
+    <div id="string-tab" class="tab-content">
+        <div class="chart-selector">
+            <select id="string-chart-type" onchange="updateStringChart()">
+                <option value="execution-time">Execution Time Comparison</option>
+                <option value="memory-usage">Memory Usage Comparison</option>
+                <option value="time-vs-size">Execution Time vs Data Size</option>
+                <option value="memory-vs-size">Memory Usage vs Data Size</option>
+            </select>
+        </div>
+        <div class="chart-container">
+            <canvas id="string-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data for integer sorting
+    const integerData = {
+        algorithms: ['Bubble Sort', 'Selection Sort', 'Insertion Sort', 'Merge Sort', 'Quick Sort', 'Shell Sort'],
+        dataSizes: [10000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000],
+        executionTime: [
+            [0.147941, 4.634066, 19.469378, 302.081586, 1266.031947, 1973.553597, 4514.231538, 9866.831524],
+            [0.064669, 1.613921, 6.511027, 127.390470, 573.455426, 643.415290, 1505.265511, 3139.387410],
+            [0.034337, 0.866234, 3.529973, 64.906505, 316.258539, 354.338267, 936.958840, 1768.004161],
+            [0.001342, 0.007292, 0.015963, 0.074311, 0.171699, 0.176369, 0.329866, 0.536767],
+            [0.000735, 0.004406, 0.009333, 0.024743, 0.129044, 0.054870, 0.199996, 0.329286],
+            [0.001372, 0.008919, 0.019426, 0.122046, 0.310747, 0.253695, 0.510064, 0.814795]
+        ],
+        memoryUsage: [
+            [39.06, 195.31, 390.62, 4881.92, 9759.83, 3906.25, 5859.38, 7812.50],
+            [39.06, 195.31, 390.62, 4881.92, 9759.83, 3906.25, 5859.38, 7812.50],
+            [39.06, 195.31, 390.62, 4881.92, 9759.83, 3906.25, 5859.38, 7812.50],
+            [78.12, 390.62, 781.25, 6835.04, 13666.08, 7812.50, 11718.75, 15625.00],
+            [39.11, 195.37, 390.69, 976.63, 9759.97, 4882.05, 5859.45, 7812.58],
+            [39.06, 195.31, 390.62, 4881.92, 9759.83, 3906.25, 5859.38, 7812.50]
+        ]
+    };
+
+    // Data for string sorting
+    const stringData = {
+        algorithms: ['Bubble Sort', 'Selection Sort', 'Insertion Sort', 'Merge Sort', 'Quick Sort', 'Shell Sort'],
+        dataSizes: [10000, 50000, 100000, 250000, 500000, 1000000, 1500000, 2000000],
+        executionTime: [
+            [0.470788, 11.062260, 43.786899, 122.067729, 492.267674, 5678.123456, 11389.928299, 15125.034729],
+            [0.182820, 4.484596, 18.429134, 40.449528, 162.053731, 3123.456789, 6152.976953, 8240.537926],
+            [0.090448, 2.254048, 9.507884, 22.046293, 88.095081, 2345.987654, 4612.945416, 6213.406948],
+            [0.002219, 0.012894, 0.027128, 0.042763, 0.086689, 0.456789, 0.667832, 0.891234],
+            [0.001488, 0.009117, 0.019063, 0.024743, 0.051089, 0.312345, 0.467823, 0.623945],
+            [0.002623, 0.017323, 0.038606, 0.055001, 0.117641, 1.234567, 1.831726, 2.438567]
+        ],
+        memoryUsage: [
+            [195.69, 977.03, 1952.70, 976.56, 1953.12, 19525.90, 19525.90, 19525.90],
+            [195.69, 977.03, 1952.70, 976.56, 1953.12, 19525.90, 19525.90, 19525.90],
+            [195.69, 977.03, 1952.70, 976.56, 1953.12, 19525.90, 19525.90, 19525.90],
+            [273.81, 1367.65, 2733.95, 1953.12, 3906.25, 27338.40, 27338.40, 27338.40],
+            [195.79, 977.15, 1952.83, 976.63, 1953.20, 19526.05, 19526.05, 19526.05],
+            [195.69, 977.03, 1952.70, 976.56, 1953.12, 19525.90, 19525.90, 19525.90]
+        ]
+    };
+
+    // Colors for each algorithm
+    const colors = [
+        'rgba(255, 99, 132, 0.7)',   // Red
+        'rgba(54, 162, 235, 0.7)',    // Blue
+        'rgba(255, 206, 86, 0.7)',    // Yellow
+        'rgba(75, 192, 192, 0.7)',    // Green
+        'rgba(153, 102, 255, 0.7)',   // Purple
+        'rgba(255, 159, 64, 0.7)'     // Orange
+    ];
+
+    // Chart instances
+    let integerChart;
+    let stringChart;
+
+    // Initialize charts when the page loads
+    window.onload = function() {
+        updateIntegerChart();
+        updateStringChart();
+    };
+
+    // Function to show the selected tab
+    function showTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    // Function to update the integer chart based on the selected chart type
+    function updateIntegerChart() {
+        const chartType = document.getElementById('integer-chart-type').value;
+        const ctx = document.getElementById('integer-chart').getContext('2d');
+
+        // Destroy previous chart if it exists
+        if (integerChart) {
+            integerChart.destroy();
+        }
+
+        // Create the appropriate chart based on selection
+        switch (chartType) {
+            case 'execution-time':
+                createComparisonChart(ctx, integerData, 'executionTime', 'Waktu Eksekusi (detik)', true);
+                break;
+            case 'memory-usage':
+                createComparisonChart(ctx, integerData, 'memoryUsage', 'Penggunaan Memori (KB)', false);
+                break;
+            case 'time-vs-size':
+                createVsSizeChart(ctx, integerData, 'executionTime', 'Waktu Eksekusi (detik)', true);
+                break;
+            case 'memory-vs-size':
+                createVsSizeChart(ctx, integerData, 'memoryUsage', 'Penggunaan Memori (KB)', false);
+                break;
+        }
+    }
+
+    // Function to update the string chart based on the selected chart type
+    function updateStringChart() {
+        const chartType = document.getElementById('string-chart-type').value;
+        const ctx = document.getElementById('string-chart').getContext('2d');
+
+        // Destroy previous chart if it exists
+        if (stringChart) {
+            stringChart.destroy();
+        }
+
+        // Create the appropriate chart based on selection
+        switch (chartType) {
+            case 'execution-time':
+                createComparisonChart(ctx, stringData, 'executionTime', 'Waktu Eksekusi (detik)', true);
+                break;
+            case 'memory-usage':
+                createComparisonChart(ctx, stringData, 'memoryUsage', 'Penggunaan Memori (KB)', false);
+                break;
+            case 'time-vs-size':
+                createVsSizeChart(ctx, stringData, 'executionTime', 'Waktu Eksekusi (detik)', true);
+                break;
+            case 'memory-vs-size':
+                createVsSizeChart(ctx, stringData, 'memoryUsage', 'Penggunaan Memori (KB)', false);
+                break;
+        }
+    }
+
+    // Function to create a comparison chart
+    function createComparisonChart(ctx, data, property, yAxisLabel, useLog) {
+        const chartData = {
+            labels: data.dataSizes,
+            datasets: data.algorithms.map((algorithm, index) => {
+                return {
+                    label: algorithm,
+                    data: data[property][index],
+                    backgroundColor: colors[index],
+                    borderColor: colors[index].replace('0.7', '1'),
+                    borderWidth: 1
+                };
+            })
+        };
+
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Ukuran Data'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: yAxisLabel
+                        },
+                        type: useLog ? 'logarithmic' : 'linear',
+                        ticks: {
+                            callback: function(value) {
+                                if (value === 0) return '0';
+                                if (useLog) {
+                                    if (value < 0.001) return value.toExponential(1);
+                                    if (value < 0.01) return value.toFixed(4);
+                                    if (value < 0.1) return value.toFixed(3);
+                                    if (value < 1) return value.toFixed(2);
+                                    if (value < 10) return value.toFixed(1);
+                                    return Math.round(value);
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Perbandingan ${yAxisLabel} untuk Setiap Algoritma`,
+                        font: {
+                            size: 18
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.raw;
+                                if (value < 0.001) return `${context.dataset.label}: ${value.toExponential(4)}`;
+                                if (value < 1) return `${context.dataset.label}: ${value.toFixed(6)}`;
+                                return `${context.dataset.label}: ${value.toFixed(2)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Save the chart instance
+        if (ctx.canvas.id === 'integer-chart') {
+            integerChart = chart;
+        } else {
+            stringChart = chart;
+        }
+    }
+
+    // Function to create a chart of metric vs data size
+    function createVsSizeChart(ctx, data, property, yAxisLabel, useLog) {
+        const chartData = {
+            labels: data.dataSizes,
+            datasets: data.algorithms.map((algorithm, index) => {
+                return {
+                    label: algorithm,
+                    data: data[property][index],
+                    backgroundColor: 'transparent',
+                    borderColor: colors[index],
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[index],
+                    pointRadius: 4,
+                    tension: 0.1
+                };
+            })
+        };
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Ukuran Data'
+                        },
+                        type: 'linear'
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: yAxisLabel
+                        },
+                        type: useLog ? 'logarithmic' : 'linear',
+                        ticks: {
+                            callback: function(value) {
+                                if (value === 0) return '0';
+                                if (useLog) {
+                                    if (value < 0.001) return value.toExponential(1);
+                                    if (value < 0.01) return value.toFixed(4);
+                                    if (value < 0.1) return value.toFixed(3);
+                                    if (value < 1) return value.toFixed(2);
+                                    if (value < 10) return value.toFixed(1);
+                                    return Math.round(value);
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `${yAxisLabel} vs Ukuran Data`,
+                        font: {
+                            size: 18
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.raw;
+                                if (value < 0.001) return `${context.dataset.label}: ${value.toExponential(4)}`;
+                                if (value < 1) return `${context.dataset.label}: ${value.toFixed(6)}`;
+                                return `${context.dataset.label}: ${value.toFixed(2)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Save the chart instance
+        if (ctx.canvas.id === 'integer-chart') {
+            integerChart = chart;
+        } else {
+            stringChart = chart;
+        }
+    }
+</script>
+</body>
+</html>
